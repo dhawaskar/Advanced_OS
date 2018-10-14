@@ -1,0 +1,339 @@
+In what directions do the stack and the heap grow? Explain your answer by using the virtual memory
+layouts at different execution phases.
+
+ANS:
+
+	Stack always grows from top to bottom [higher address to lower address ] and heap grows [lower address to higher address] from bottom to top.
+
+Now consider the program we wrote and memory allocation before call to malloc below.
+Heap is from 0x008b6000 to 0x008d7000 and stack is from 7ffeea41a000 to 7ffeea43b000 . Hence they are growing towards each other.
+
+We will use part2.c program for this explanation.
+
+Here is the memory map before malloc:
+
+
+root@sandesh-VirtualBox:/proc/8109# cat maps 
+00400000-00401000 r-xp 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00600000-00601000 r--p 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00601000-00602000 rw-p 00001000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+008b6000-008d7000 rw-p 00000000 00:00 0                                  [heap]
+7f7245f6f000-7f724612f000 r-xp 00000000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724612f000-7f724632f000 ---p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724632f000-7f7246333000 r--p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246333000-7f7246335000 rw-p 001c4000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246335000-7f7246339000 rw-p 00000000 00:00 0 
+7f7246339000-7f724635f000 r-xp 00000000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246541000-7f7246544000 rw-p 00000000 00:00 0 
+7f724655e000-7f724655f000 r--p 00025000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f724655f000-7f7246560000 rw-p 00026000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246560000-7f7246561000 rw-p 00000000 00:00 0 
+7ffeea41a000-7ffeea43b000 rw-p 00000000 00:00 0                          [stack]
+7ffeea4f4000-7ffeea4f7000 r--p 00000000 00:00 0                          [vvar]
+7ffeea4f7000-7ffeea4f9000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+root@sandesh-VirtualBox:/proc/8109# 
+
+
+Now consider the same memory map after malloc and before free:
+
+root@sandesh-VirtualBox:/proc/8109# cat maps 
+00400000-00401000 r-xp 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00600000-00601000 r--p 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00601000-00602000 rw-p 00001000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+008b6000-008d7000 rw-p 00000000 00:00 0                                  [heap]
+7f7245f6f000-7f724612f000 r-xp 00000000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724612f000-7f724632f000 ---p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724632f000-7f7246333000 r--p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246333000-7f7246335000 rw-p 001c4000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246335000-7f7246339000 rw-p 00000000 00:00 0 
+7f7246339000-7f724635f000 r-xp 00000000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246541000-7f7246544000 rw-p 00000000 00:00 0 
+7f724655e000-7f724655f000 r--p 00025000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f724655f000-7f7246560000 rw-p 00026000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246560000-7f7246561000 rw-p 00000000 00:00 0 
+7ffeea41a000-7ffeea43b000 rw-p 00000000 00:00 0                          [stack]
+7ffeea4f4000-7ffeea4f7000 r--p 00000000 00:00 0                          [vvar]
+7ffeea4f7000-7ffeea4f9000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+root@sandesh-VirtualBox:/proc/8109# 
+
+Now consider the momory map after free and before we call a function:
+
+root@sandesh-VirtualBox:/proc/8109# cat maps 
+00400000-00401000 r-xp 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00600000-00601000 r--p 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00601000-00602000 rw-p 00001000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+008b6000-008d7000 rw-p 00000000 00:00 0                                  [heap]
+7f7245f6f000-7f724612f000 r-xp 00000000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724612f000-7f724632f000 ---p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724632f000-7f7246333000 r--p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246333000-7f7246335000 rw-p 001c4000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246335000-7f7246339000 rw-p 00000000 00:00 0 
+7f7246339000-7f724635f000 r-xp 00000000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246541000-7f7246544000 rw-p 00000000 00:00 0 
+7f724655e000-7f724655f000 r--p 00025000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f724655f000-7f7246560000 rw-p 00026000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246560000-7f7246561000 rw-p 00000000 00:00 0 
+7ffeea41a000-7ffeea43b000 rw-p 00000000 00:00 0                          [stack]
+7ffeea4f4000-7ffeea4f7000 r--p 00000000 00:00 0                          [vvar]
+7ffeea4f7000-7ffeea4f9000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+root@sandesh-VirtualBox:/proc/8109# 
+
+Now consider the memory map after free and after a function call:
+
+root@sandesh-VirtualBox:/proc/8109# cat maps 
+00400000-00401000 r-xp 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00600000-00601000 r--p 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00601000-00602000 rw-p 00001000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+008b6000-008d7000 rw-p 00000000 00:00 0                                  [heap]
+7f7245f6f000-7f724612f000 r-xp 00000000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724612f000-7f724632f000 ---p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724632f000-7f7246333000 r--p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246333000-7f7246335000 rw-p 001c4000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246335000-7f7246339000 rw-p 00000000 00:00 0 
+7f7246339000-7f724635f000 r-xp 00000000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246541000-7f7246544000 rw-p 00000000 00:00 0 
+7f724655e000-7f724655f000 r--p 00025000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f724655f000-7f7246560000 rw-p 00026000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246560000-7f7246561000 rw-p 00000000 00:00 0 
+7ffeea41a000-7ffeea43b000 rw-p 00000000 00:00 0                          [stack]
+7ffeea4f4000-7ffeea4f7000 r--p 00000000 00:00 0                          [vvar]
+7ffeea4f7000-7ffeea4f9000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+root@sandesh-VirtualBox:/proc/8109# 
+
+In the fuction before memory malloc:
+root@sandesh-VirtualBox:/proc/8109# cat maps 
+00400000-00401000 r-xp 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00600000-00601000 r--p 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00601000-00602000 rw-p 00001000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+008b6000-008d7000 rw-p 00000000 00:00 0                                  [heap]
+7f7245f6f000-7f724612f000 r-xp 00000000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724612f000-7f724632f000 ---p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724632f000-7f7246333000 r--p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246333000-7f7246335000 rw-p 001c4000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246335000-7f7246339000 rw-p 00000000 00:00 0 
+7f7246339000-7f724635f000 r-xp 00000000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246541000-7f7246544000 rw-p 00000000 00:00 0 
+7f724655e000-7f724655f000 r--p 00025000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f724655f000-7f7246560000 rw-p 00026000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246560000-7f7246561000 rw-p 00000000 00:00 0 
+7ffeea41a000-7ffeea43b000 rw-p 00000000 00:00 0                          [stack]
+7ffeea4f4000-7ffeea4f7000 r--p 00000000 00:00 0                          [vvar]
+7ffeea4f7000-7ffeea4f9000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+root@sandesh-VirtualBox:/proc/8109#
+
+In function after memory malloc
+root@sandesh-VirtualBox:/proc/8109# cat maps 
+00400000-00401000 r-xp 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00600000-00601000 r--p 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00601000-00602000 rw-p 00001000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+008b6000-008d7000 rw-p 00000000 00:00 0                                  [heap]
+7f7245f6f000-7f724612f000 r-xp 00000000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724612f000-7f724632f000 ---p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724632f000-7f7246333000 r--p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246333000-7f7246335000 rw-p 001c4000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246335000-7f7246339000 rw-p 00000000 00:00 0 
+7f7246339000-7f724635f000 r-xp 00000000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246541000-7f7246544000 rw-p 00000000 00:00 0 
+7f724655e000-7f724655f000 r--p 00025000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f724655f000-7f7246560000 rw-p 00026000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246560000-7f7246561000 rw-p 00000000 00:00 0 
+7ffeea41a000-7ffeea43b000 rw-p 00000000 00:00 0                          [stack]
+7ffeea4f4000-7ffeea4f7000 r--p 00000000 00:00 0                          [vvar]
+7ffeea4f7000-7ffeea4f9000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+root@sandesh-VirtualBox:/proc/8109#
+
+
+In function after free
+root@sandesh-VirtualBox:/proc/8109# cat maps 
+00400000-00401000 r-xp 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00600000-00601000 r--p 00000000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+00601000-00602000 rw-p 00001000 08:01 1321256                            /home/sandesh/workspace/AOS/assign_1/part2
+008b6000-008d7000 rw-p 00000000 00:00 0                                  [heap]
+7f7245f6f000-7f724612f000 r-xp 00000000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724612f000-7f724632f000 ---p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f724632f000-7f7246333000 r--p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246333000-7f7246335000 rw-p 001c4000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f7246335000-7f7246339000 rw-p 00000000 00:00 0 
+7f7246339000-7f724635f000 r-xp 00000000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246541000-7f7246544000 rw-p 00000000 00:00 0 
+7f724655e000-7f724655f000 r--p 00025000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f724655f000-7f7246560000 rw-p 00026000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f7246560000-7f7246561000 rw-p 00000000 00:00 0 
+7ffeea41a000-7ffeea43b000 rw-p 00000000 00:00 0                          [stack]
+7ffeea4f4000-7ffeea4f7000 r--p 00000000 00:00 0                          [vvar]
+7ffeea4f7000-7ffeea4f9000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+root@sandesh-VirtualBox:/proc/8109# 
+
+Again consider new example part2_1.c which proves the malloc grows memory in upper direction:
+sandesh@sandesh-VirtualBox:~/workspace/AOS/assign_1$ ./a.out 
+Allocated pointer	0x12b9010
+	0x12b9000 	 00		0x12b9001 	 00		0x12b9002 	 00		0x12b9003 	 00		0x12b9004 	 00		0x12b9005 	 00		0x12b9006 	 00		0x12b9007 	 00		0x12b9008 	 21	0x12b9009 	 00		0x12b900a 	 00		0x12b900b 	 00		0x12b900c 	 00		0x12b900d 	 00		0x12b900e 	 00		0x12b900f 	 00		0x12b9010 	 00
+Allocated pointer	0x12b9440
+	0x12b9430 	 00		0x12b9431 	 00		0x12b9432 	 00		0x12b9433 	 00		0x12b9434 	 00		0x12b9435 	 00		0x12b9436 	 00		0x12b9437 	 00		0x12b9438 	 21	0x12b9439 	 00		0x12b943a 	 00		0x12b943b 	 00		0x12b943c 	 00		0x12b943d 	 00		0x12b943e 	 00		0x12b943f 	 00		0x12b9440 	 00
+Allocated pointer	0x12b9460
+	0x12b9450 	 00		0x12b9451 	 00		0x12b9452 	 00		0x12b9453 	 00		0x12b9454 	 00		0x12b9455 	 00		0x12b9456 	 00		0x12b9457 	 00		0x12b9458 	 21	0x12b9459 	 00		0x12b945a 	 00		0x12b945b 	 00		0x12b945c 	 00		0x12b945d 	 00		0x12b945e 	 00		0x12b945f 	 00		0x12b9460 	 00
+
+Lets malloc again agin***allocated pointer	0x12b9870
+
+Here two pointers returned are upper memory .
+
+Now we can do objdump and check the pointers of new memory location for stack: using part2.c
+
+0000000000400714 <main>
+0000000000400686 <function_allocate>:
+
+as you see second function is called and stack is created for that and its address is less than that of main which proves that stack grows downwords.
+
+
+your executable code will be “divided” into three different regions with different permissions. What
+are all these regions?
+
+The three regions of memory that the code will be devided into are
+Memory region- this will have heap stack and shared memory regions and these are three regions for memory itself.
+Data region- This will have all global and static data
+code region- This will have binary execuatble
+The permissions are:
+r: read
+w: Write
+x: executable
+s: shared and
+p: private
+
+This indicates the memory regions are pages that has permissions. i.e process executing it. If permission does not match it will raise segment fault error.
+In the log attached above we can see stack,heap and shared memory regions indicated by permissions like rwxp/rwxs.
+
+If we take the segement thire are also additional two segment. I.e Data and text other than memory regions.
+
+
+Your allocated memory (from malloc( )) will not start at the very beginning of the heap. Explain why
+this is so.
+
+ans: to answer this question we need to check if the given statement is correct. for which we will write the part2_2.c and check out self.
+
+Now if we excute the address where it is supposed to start heap is given below:
+sandesh@sandesh-VirtualBox:/proc/9125$ cat maps 
+00400000-00401000 r-xp 00000000 08:01 1321258                            /home/sandesh/workspace/AOS/assign_1/a.out
+00600000-00601000 r--p 00000000 08:01 1321258                            /home/sandesh/workspace/AOS/assign_1/a.out
+00601000-00602000 rw-p 00001000 08:01 1321258                            /home/sandesh/workspace/AOS/assign_1/a.out
+01545000-01566000 rw-p 00000000 00:00 0                                  [heap]
+7f32fc8e1000-7f32fcaa1000 r-xp 00000000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f32fcaa1000-7f32fcca1000 ---p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f32fcca1000-7f32fcca5000 r--p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f32fcca5000-7f32fcca7000 rw-p 001c4000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7f32fcca7000-7f32fccab000 rw-p 00000000 00:00 0 
+7f32fccab000-7f32fccd1000 r-xp 00000000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f32fceb3000-7f32fceb6000 rw-p 00000000 00:00 0 
+7f32fced0000-7f32fced1000 r--p 00025000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f32fced1000-7f32fced2000 rw-p 00026000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7f32fced2000-7f32fced3000 rw-p 00000000 00:00 0 
+7ffe6715f000-7ffe67180000 rw-p 00000000 00:00 0                          [stack]
+7ffe671a5000-7ffe671a8000 r--p 00000000 00:00 0                          [vvar]
+7ffe671a8000-7ffe671aa000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+
+
+If we see that heap is supposed to start frpm 01545000 but allocated memory is at "Allocated memory is at 	0x1545010"(output of part2_2.c)
+
+Now lets us investigate why is this happening by printing the memory address
+
+
+By printing:
+sandesh@sandesh-VirtualBox:~/workspace/AOS/assign_1$ ./a.out 
+Allocated pointer	0x18c3010
+	0x18c3000 	 00		0x18c3001 	 00		0x18c3002 	 00		0x18c3003 	 00		0x18c3004 	 00		0x18c3005 	 00		0x18c3006 	 00		0x18c3007 	 00		0x18c3008 	 21	0x18c3009 	 00		0x18c300a 	 00		0x18c300b 	 00		0x18c300c 	 00		0x18c300d 	 00		0x18c300e 	 00		0x18c300f 	 00		0x18c3010 	 00
+Allocated pointer	0x18c3440
+	0x18c3430 	 00		0x18c3431 	 00		0x18c3432 	 00		0x18c3433 	 00		0x18c3434 	 00		0x18c3435 	 00		0x18c3436 	 00		0x18c3437 	 00		0x18c3438 	 21	0x18c3439 	 00		0x18c343a 	 00		0x18c343b 	 00		0x18c343c 	 00		0x18c343d 	 00		0x18c343e 	 00		0x18c343f 	 00		0x18c3440 	 00
+Allocated pointer	0x18c3460
+	0x18c3450 	 00		0x18c3451 	 00		0x18c3452 	 00		0x18c3453 	 00		0x18c3454 	 00		0x18c3455 	 00		0x18c3456 	 00		0x18c3457 	 00		0x18c3458 	 21	0x18c3459 	 00		0x18c345a 	 00		0x18c345b 	 00		0x18c345c 	 00		0x18c345d 	 00		0x18c345e 	 00		0x18c345f 	 00		0x18c3460 	 00
+
+Now look at the memory allocation for same from /proc/pid/maps
+
+sandesh@sandesh-VirtualBox:~$ cat /proc/10127/maps
+00400000-00401000 r-xp 00000000 08:01 1321157                            /home/sandesh/workspace/AOS/assign_1/a.out
+00600000-00601000 r--p 00000000 08:01 1321157                            /home/sandesh/workspace/AOS/assign_1/a.out
+00601000-00602000 rw-p 00001000 08:01 1321157                            /home/sandesh/workspace/AOS/assign_1/a.out
+018c3000-018e4000 rw-p 00000000 00:00 0                                  [heap]
+7efdbb218000-7efdbb3d8000 r-xp 00000000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7efdbb3d8000-7efdbb5d8000 ---p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7efdbb5d8000-7efdbb5dc000 r--p 001c0000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7efdbb5dc000-7efdbb5de000 rw-p 001c4000 08:01 529103                     /lib/x86_64-linux-gnu/libc-2.23.so
+7efdbb5de000-7efdbb5e2000 rw-p 00000000 00:00 0 
+7efdbb5e2000-7efdbb608000 r-xp 00000000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7efdbb7ea000-7efdbb7ed000 rw-p 00000000 00:00 0 
+7efdbb807000-7efdbb808000 r--p 00025000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7efdbb808000-7efdbb809000 rw-p 00026000 08:01 529075                     /lib/x86_64-linux-gnu/ld-2.23.so
+7efdbb809000-7efdbb80a000 rw-p 00000000 00:00 0 
+7fff8e1db000-7fff8e1fc000 rw-p 00000000 00:00 0                          [stack]
+7fff8e20d000-7fff8e210000 r--p 00000000 00:00 0                          [vvar]
+7fff8e210000-7fff8e212000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+sandesh@sandesh-VirtualBox:~$
+
+
+so why is this extra 16 bytes allocated? May be we should look into the source code of malloc.c from glibc souce code
+https://code.woboq.org/userspace/glibc/malloc/malloc.c.html look at line 1075.
+We will see this below:
+Chunks of memory are maintained using a `boundary tag' method as
+    described in e.g., Knuth or Standish.  (See the paper by Paul
+    Wilson ftp://ftp.cs.utexas.edu/pub/garbage/allocsrv.ps for a
+    survey of such techniques.)  Sizes of free chunks are stored both
+    in the front of each chunk and at the end.  This makes
+    consolidating fragmented chunks into bigger chunks very fast.  The
+    size fields also hold bits representing whether chunks are free or
+    in use.
+    An allocated chunk looks like this:
+    chunk-> +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |             Size of previous chunk, if unallocated (P clear)  |
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |             Size of chunk, in bytes                     |A|M|P|
+      mem-> +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |             User data starts here...                          .
+            .                                                               .
+            .             (malloc_usable_size() bytes)                      .
+            .                                                               |
+nextchunk-> +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |             (size of chunk, but used for application data)    |
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |             Size of next chunk, in bytes                |A|0|1|
+            +-+-+-+-+-+-+-+
+
+
+
+
+*************************************************************************************************************************************
+*************************************************************************************************************************************
+
+
+The program break is the address of the first location beyond the current end of the data region of the
+program in the virual memory. sbrk() with an increment of 0 can be used to find the current location
+of the program break. In general, that should be the start of the heap. However, you will see that this is
+NOT the case. The only thing that is true is that the heap is always the next memory region after the
+executable. If you run your program between the executable and the heap is random. Explain why this
+is so
+
+One of famous hacking the binary code technique is buffer overflow attack and code injection. Both of this make use of the fact like memory allocated continiously. Hence thire is something called randomization which was introduced. Even with this randomization we can do hacking using Return Oriented Programming.
+This randomization is known as Address Space Layout Randomisation (ASLR). ASLR is a computer security technique involved in preventing exploitation of memory corruption vulnerabilities. In order to prevent an attacker from jumping to, for example, a particular exploited function in memory, ASLR randomly arranges the address space positions of key data areas of a process, including the positions of the heap and the stack.
+
+Hence even though the heap is next memory region it is never the continous memory location. We can actually confirm this from souce code study as well like we did for last part of question.
+look into code from arch/x86/kernel/process.c
+https://elixir.bootlin.com/linux/latest/source/arch/x86/kernel/process.c
+line 719 to 721
+Hence this random value could range form 0 and 0x02000000.
+
+
+
+
+References:
+https://gist.github.com/CMCDragonkai/10ab53654b2aa6ce55c11cfc5b2432a4
+http://man7.org/linux/man-pages/man5/proc.5.html
+https://blog.holbertonschool.com/hack-the-virtual-memory-malloc-the-heap-the-program-break/
+
+
+
